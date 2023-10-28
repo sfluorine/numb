@@ -3,6 +3,11 @@
 
 #include "parser.h"
 
+#define RETURN_IF_ERROR() \
+    if (has_errors()) {   \
+        return {};        \
+    }
+
 std::optional<std::shared_ptr<Expr>> Parser::parse_expression()
 {
     const auto starting_line = m_current.line;
@@ -15,7 +20,7 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_expression()
 
         auto rhs = TRY(parse_term());
         auto binary = std::make_shared<ExprBinary>(
-            std::move(op), std::move(lhs), std::move(rhs), starting_line);
+            op, std::move(lhs), std::move(rhs), starting_line);
 
         lhs = binary;
     }
@@ -34,7 +39,7 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_term()
 
         auto rhs = TRY(parse_factor());
         auto binary = std::make_shared<ExprBinary>(
-            std::move(op), std::move(lhs), std::move(rhs), starting_line);
+            op, std::move(lhs), std::move(rhs), starting_line);
 
         lhs = binary;
     }
@@ -53,7 +58,7 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_factor()
 
         auto rhs = TRY(parse_primary());
         auto binary = std::make_shared<ExprBinary>(
-            std::move(op), std::move(lhs), std::move(rhs), starting_line);
+            op, std::move(lhs), std::move(rhs), starting_line);
 
         lhs = binary;
     }
@@ -64,7 +69,18 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_factor()
 std::optional<std::shared_ptr<Expr>> Parser::parse_primary()
 {
     const auto current_line = m_current.line;
-    if (expect(Token::Type::IntLiteral)) {
+
+    if (expect(Token::Type::LParen)) {
+        consume();
+
+        auto expr = TRY(parse_expression());
+
+        match(Token::Type::RParen);
+
+        RETURN_IF_ERROR();
+
+        return expr;
+    } else if (expect(Token::Type::IntLiteral)) {
         auto tok = m_current;
         auto span = tok.span;
 
@@ -81,7 +97,28 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_primary()
         consume();
         return std::make_shared<ExprBool>(false, current_line);
     } else {
-        error("expected primary");
+        return TRY(parse_unary());
+    }
+}
+
+std::optional<std::shared_ptr<Expr>> Parser::parse_unary()
+{
+    const auto current_line = m_current.line;
+
+    if (expect(Token::Type::Minus) || expect(Token::Type::Bang)) {
+        auto tok = m_current;
+        consume();
+
+        auto opt_expr = parse_expression();
+        if (!opt_expr) {
+            error("expected expression");
+            return {};
+        }
+
+        return std::make_shared<ExprUnary>(tok, std::move(opt_expr.value()),
+                                           current_line);
+    } else {
+        error("expected unary");
         return {};
     }
 }
@@ -94,7 +131,6 @@ std::optional<std::shared_ptr<Stmt>> Parser::parse_statement()
 std::optional<std::shared_ptr<Stmt>> Parser::parse_let_stmt()
 {
     const auto current_line = m_current.line;
-
     match(Token::Type::Let);
 
     auto name = m_current;
@@ -109,7 +145,12 @@ std::optional<std::shared_ptr<Stmt>> Parser::parse_let_stmt()
         return {};
     }
 
-    return std::make_shared<StmtLet>(std::string(name_span), expr.value(), current_line);
+    match(Token::Type::Semicolon);
+
+    RETURN_IF_ERROR();
+
+    return std::make_shared<StmtLet>(std::string(name_span),
+                                     std::move(expr.value()), current_line);
 }
 
 template <typename... Args>

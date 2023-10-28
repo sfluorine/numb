@@ -16,6 +16,7 @@ struct Ast {
 
     virtual void accept(AstVisitor&) = 0;
 
+    // This function will be called when typechecking succeed
     void set_done()
     {
         done = !done;
@@ -63,6 +64,18 @@ struct ExprBool : public Expr {
     bool parsed_bool;
 };
 
+struct ExprUnary : public Expr {
+    ExprUnary(Token op, std::shared_ptr<Expr> expr, size_t line)
+        : op(op), expr(std::move(expr)), Expr(line)
+    {
+    }
+
+    OVERLOAD_ACCEPT();
+
+    Token op;
+    std::shared_ptr<Expr> expr;
+};
+
 struct ExprBinary : public Expr {
     ExprBinary(Token op, std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs,
                size_t line)
@@ -100,13 +113,24 @@ struct StmtLet : public Stmt {
     std::shared_ptr<Expr> expr;
 };
 
+#define DEFINE_VIRTUAL_VISIT()           \
+    virtual void visit(ExprInt*) = 0;    \
+    virtual void visit(ExprBool*) = 0;   \
+    virtual void visit(ExprUnary*) = 0;  \
+    virtual void visit(ExprBinary*) = 0; \
+    virtual void visit(StmtLet*) = 0;
+
+#define OVERLOAD_VISIT()                      \
+    virtual void visit(ExprInt*) override;    \
+    virtual void visit(ExprBool*) override;   \
+    virtual void visit(ExprUnary*) override;  \
+    virtual void visit(ExprBinary*) override; \
+    virtual void visit(StmtLet*) override;
+
 struct AstVisitor {
     virtual ~AstVisitor()
     {
     }
 
-    virtual void visit(ExprInt*) = 0;
-    virtual void visit(ExprBool*) = 0;
-    virtual void visit(ExprBinary*) = 0;
-    virtual void visit(StmtLet*) = 0;
+    DEFINE_VIRTUAL_VISIT();
 };

@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "ast.h"
-#include "lexer.h"
 #include "common.h"
+#include "lexer.h"
 
 class Parser
 {
@@ -19,9 +19,15 @@ public:
     std::optional<std::shared_ptr<Expr>> parse_term();
     std::optional<std::shared_ptr<Expr>> parse_factor();
     std::optional<std::shared_ptr<Expr>> parse_primary();
+    std::optional<std::shared_ptr<Expr>> parse_unary();
 
     std::optional<std::shared_ptr<Stmt>> parse_statement();
     std::optional<std::shared_ptr<Stmt>> parse_let_stmt();
+
+    bool has_errors() const
+    {
+        return errors().size() > 0;
+    }
 
     std::vector<std::string> const& errors() const
     {
