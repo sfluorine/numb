@@ -1,0 +1,22 @@
+﻿---
+BasedOnStyle: Google
+AccessModifierOffset: '-4'
+AlignAfterOpenBracket: Align
+AlignConsecutiveMacros: 'true'
+AlignEscapedNewlines: Left
+AllowAllArgumentsOnNextLine: 'true'
+AllowShortBlocksOnASingleLine: 'false'
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: 'false'
+AlwaysBreakBeforeMultilineStrings: 'true'
+BreakBeforeBraces: Linux
+BreakConstructorInitializers: BeforeColon
+IndentWidth: '4'
+Language: Cpp
+SpaceInEmptyParentheses: 'false'
+SpacesInParentheses: 'false'
+TabWidth: '4'
+UseTab: Never
+
+...
