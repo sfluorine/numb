@@ -109,4 +109,6 @@ void Typechecker::visit(StmtLet* stmt)
     if (stmt->expr->done) {
         stmt->set_done();
     }
+
+    stmt->set_done();
 }

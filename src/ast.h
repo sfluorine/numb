@@ -20,7 +20,7 @@ struct Ast {
     // This function will be called when typechecking succeed
     void set_done()
     {
-        done = !done;
+        done = true;
     }
 
     bool done { false };
