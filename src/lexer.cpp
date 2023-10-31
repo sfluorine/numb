@@ -7,15 +7,17 @@
 std::map<std::string_view, Token::Type> Lexer::m_keywords;
 
 Lexer::Lexer(std::string_view input = "")
-    : m_input(input), m_cursor(0), m_line(1)
+    : m_input(input)
+    , m_cursor(0)
+    , m_line(1)
 {
     if (m_keywords.empty()) {
-        m_keywords.insert({"let", Token::Type::Let});
-        m_keywords.insert({"def", Token::Type::Def});
-        m_keywords.insert({"if", Token::Type::If});
-        m_keywords.insert({"else", Token::Type::Else});
-        m_keywords.insert({"true", Token::Type::True});
-        m_keywords.insert({"false", Token::Type::False});
+        m_keywords.insert({ "let", Token::Type::Let });
+        m_keywords.insert({ "def", Token::Type::Def });
+        m_keywords.insert({ "if", Token::Type::If });
+        m_keywords.insert({ "else", Token::Type::Else });
+        m_keywords.insert({ "true", Token::Type::True });
+        m_keywords.insert({ "false", Token::Type::False });
     }
 }
 
@@ -31,55 +33,55 @@ Token Lexer::next()
     }
 
     switch (current()) {
-        case '(':
+    case '(':
+        consume();
+        return Token(Token::Type::LParen, start_line);
+    case ')':
+        consume();
+        return Token(Token::Type::RParen, start_line);
+    case '{':
+        consume();
+        return Token(Token::Type::LCurly, start_line);
+    case '}':
+        consume();
+        return Token(Token::Type::RCurly, start_line);
+    case ';':
+        consume();
+        return Token(Token::Type::Semicolon, start_line);
+    case '+':
+        consume();
+        return Token(Token::Type::Plus, start_line);
+    case '-':
+        consume();
+        return Token(Token::Type::Minus, start_line);
+    case '*':
+        consume();
+        return Token(Token::Type::Star, start_line);
+    case '/':
+        consume();
+        return Token(Token::Type::Slash, start_line);
+    case '<':
+        consume();
+        return Token(Token::Type::LessThan, start_line);
+    case '>':
+        consume();
+        return Token(Token::Type::GreaterThan, start_line);
+    case '=':
+        consume();
+        if (current() == '=') {
             consume();
-            return Token(Token::Type::LParen, start_line);
-        case ')':
+            return Token(Token::Type::EqualEqual, start_line);
+        }
+        return Token(Token::Type::Equal, start_line);
+    case '!':
+        consume();
+        if (current() == '=') {
             consume();
-            return Token(Token::Type::RParen, start_line);
-        case '{':
-            consume();
-            return Token(Token::Type::LCurly, start_line);
-        case '}':
-            consume();
-            return Token(Token::Type::RCurly, start_line);
-        case ';':
-            consume();
-            return Token(Token::Type::Semicolon, start_line);
-        case '+':
-            consume();
-            return Token(Token::Type::Plus, start_line);
-        case '-':
-            consume();
-            return Token(Token::Type::Minus, start_line);
-        case '*':
-            consume();
-            return Token(Token::Type::Star, start_line);
-        case '/':
-            consume();
-            return Token(Token::Type::Slash, start_line);
-        case '<':
-            consume();
-            return Token(Token::Type::LessThan, start_line);
-        case '>':
-            consume();
-            return Token(Token::Type::GreaterThan, start_line);
-        case '=':
-            consume();
-            if (current() == '=') {
-                consume();
-                return Token(Token::Type::EqualEqual, start_line);
-            }
-            return Token(Token::Type::Equal, start_line);
-        case '!':
-            consume();
-            if (current() == '=') {
-                consume();
-                return Token(Token::Type::BangEqual, start_line);
-            }
-            return Token(Token::Type::Bang, start_line);
-        default:
-            break;
+            return Token(Token::Type::BangEqual, start_line);
+        }
+        return Token(Token::Type::Bang, start_line);
+    default:
+        break;
     }
 
     if (isdigit(current())) {
@@ -117,7 +119,7 @@ Token Lexer::next()
     return Token(Token::Type::Garbage, garbage_span, start_line);
 }
 
-const char* Lexer::start_span() const
+char const* Lexer::start_span() const
 {
     return m_input.data() + m_cursor;
 }

@@ -6,7 +6,7 @@
 
 class AstVisitor;
 
-#define OVERLOAD_ACCEPT()               virtual void accept(AstVisitor&) override;
+#define OVERLOAD_ACCEPT() virtual void accept(AstVisitor&) override;
 #define DEFINE_OVERLOADED_ACCEPT(class) void class ::accept(AstVisitor& visitor)
 
 struct Ast {
@@ -22,11 +22,12 @@ struct Ast {
         done = !done;
     }
 
-    bool done{false};
-    size_t line{1};
+    bool done { false };
+    size_t line { 1 };
 
 protected:
-    Ast(size_t line) : line(line)
+    Ast(size_t line)
+        : line(line)
     {
     }
 };
@@ -37,14 +38,16 @@ struct Expr : public Ast {
     }
 
 protected:
-    Expr(size_t line) : Ast(line)
+    Expr(size_t line)
+        : Ast(line)
     {
     }
 };
 
 struct ExprInt : public Expr {
     ExprInt(int64_t parsed_int, size_t line)
-        : parsed_int(parsed_int), Expr(line)
+        : parsed_int(parsed_int)
+        , Expr(line)
     {
     }
 
@@ -55,7 +58,8 @@ struct ExprInt : public Expr {
 
 struct ExprBool : public Expr {
     ExprBool(bool parsed_bool, size_t line)
-        : parsed_bool(parsed_bool), Expr(line)
+        : parsed_bool(parsed_bool)
+        , Expr(line)
     {
     }
 
@@ -66,7 +70,9 @@ struct ExprBool : public Expr {
 
 struct ExprUnary : public Expr {
     ExprUnary(Token op, std::shared_ptr<Expr> expr, size_t line)
-        : op(op), expr(std::move(expr)), Expr(line)
+        : op(op)
+        , expr(std::move(expr))
+        , Expr(line)
     {
     }
 
@@ -78,8 +84,11 @@ struct ExprUnary : public Expr {
 
 struct ExprBinary : public Expr {
     ExprBinary(Token op, std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs,
-               size_t line)
-        : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)), Expr(line)
+        size_t line)
+        : op(op)
+        , lhs(std::move(lhs))
+        , rhs(std::move(rhs))
+        , Expr(line)
     {
     }
 
@@ -96,14 +105,17 @@ struct Stmt : public Ast {
     }
 
 protected:
-    Stmt(size_t line) : Ast(line)
+    Stmt(size_t line)
+        : Ast(line)
     {
     }
 };
 
 struct StmtLet : public Stmt {
     StmtLet(std::string name, std::shared_ptr<Expr> expr, size_t line)
-        : name(std::move(name)), expr(std::move(expr)), Stmt(line)
+        : name(std::move(name))
+        , expr(std::move(expr))
+        , Stmt(line)
     {
     }
 

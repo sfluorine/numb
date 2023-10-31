@@ -10,11 +10,10 @@
 
 std::optional<std::shared_ptr<Expr>> Parser::parse_expression()
 {
-    const auto starting_line = m_current.line;
+    auto const starting_line = m_current.line;
     auto lhs = TRY(parse_term());
 
-    while (expect(Token::Type::LessThan) || expect(Token::Type::GreaterThan) ||
-           expect(Token::Type::EqualEqual) || expect(Token::Type::BangEqual)) {
+    while (expect(Token::Type::LessThan) || expect(Token::Type::GreaterThan) || expect(Token::Type::EqualEqual) || expect(Token::Type::BangEqual)) {
         auto op = m_current;
         consume();
 
@@ -30,7 +29,7 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_expression()
 
 std::optional<std::shared_ptr<Expr>> Parser::parse_term()
 {
-    const auto starting_line = m_current.line;
+    auto const starting_line = m_current.line;
     auto lhs = TRY(parse_factor());
 
     while (expect(Token::Type::Plus) || expect(Token::Type::Minus)) {
@@ -49,7 +48,7 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_term()
 
 std::optional<std::shared_ptr<Expr>> Parser::parse_factor()
 {
-    const auto starting_line = m_current.line;
+    auto const starting_line = m_current.line;
     auto lhs = TRY(parse_primary());
 
     while (expect(Token::Type::Star) || expect(Token::Type::Slash)) {
@@ -68,7 +67,7 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_factor()
 
 std::optional<std::shared_ptr<Expr>> Parser::parse_primary()
 {
-    const auto current_line = m_current.line;
+    auto const current_line = m_current.line;
 
     if (expect(Token::Type::LParen)) {
         consume();
@@ -103,7 +102,7 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_primary()
 
 std::optional<std::shared_ptr<Expr>> Parser::parse_unary()
 {
-    const auto current_line = m_current.line;
+    auto const current_line = m_current.line;
 
     if (expect(Token::Type::Minus) || expect(Token::Type::Bang)) {
         auto tok = m_current;
@@ -116,7 +115,7 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_unary()
         }
 
         return std::make_shared<ExprUnary>(tok, std::move(opt_expr.value()),
-                                           current_line);
+            current_line);
     } else {
         error("expected unary");
         return {};
@@ -130,7 +129,7 @@ std::optional<std::shared_ptr<Stmt>> Parser::parse_statement()
 
 std::optional<std::shared_ptr<Stmt>> Parser::parse_let_stmt()
 {
-    const auto current_line = m_current.line;
+    auto const current_line = m_current.line;
     match(Token::Type::Let);
 
     auto name = m_current;
@@ -150,16 +149,16 @@ std::optional<std::shared_ptr<Stmt>> Parser::parse_let_stmt()
     RETURN_IF_ERROR();
 
     return std::make_shared<StmtLet>(std::string(name_span),
-                                     std::move(expr.value()), current_line);
+        std::move(expr.value()), current_line);
 }
 
-template <typename... Args>
+template<typename... Args>
 void Parser::error(std::string_view format, Args&&... args)
 {
     m_errors.emplace_back(std::format(
         "{}: ERROR: {}", m_current.line,
         std::vformat(format,
-                     std::make_format_args(std::forward<Args>(args)...))));
+            std::make_format_args(std::forward<Args>(args)...))));
 }
 
 bool Parser::expect(Token::Type type) const
@@ -185,7 +184,7 @@ void Parser::match(Token::Type type)
 {
     if (!expect(type)) {
         error("expected '{}' but got '{}'", Token::type_to_string(type),
-              Token::type_to_string(m_current.type));
+            Token::type_to_string(m_current.type));
     }
 
     consume();

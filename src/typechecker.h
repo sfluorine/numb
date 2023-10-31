@@ -8,7 +8,7 @@
 struct Typechecker : public AstVisitor {
     OVERLOAD_VISIT();
 
-    template <typename... Args>
+    template<typename... Args>
     void error(size_t, std::string_view, Args&&...);
 
     NumbType type;

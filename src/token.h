@@ -41,18 +41,26 @@ struct Token {
         TypeCount,
     };
 
-    static const char* type_to_string(Type);
+    static char const* type_to_string(Type);
 
-    Token() : type(Type::Garbage), span(""), line(1)
+    Token()
+        : type(Type::Garbage)
+        , span("")
+        , line(1)
     {
     }
 
-    Token(Type type, size_t line) : type(type), span(""), line(line)
+    Token(Type type, size_t line)
+        : type(type)
+        , span("")
+        , line(line)
     {
     }
 
     Token(Type type, std::string_view span, size_t line)
-        : type(type), span(span), line(line)
+        : type(type)
+        , span(span)
+        , line(line)
     {
     }
 

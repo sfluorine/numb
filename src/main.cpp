@@ -1,12 +1,14 @@
 #include <iostream>
 
+#include "codegen.h"
 #include "parser.h"
 #include "typechecker.h"
+#include "vm.h"
 
 int main(int argc, char** argv)
 {
-    Parser parser("let __x = !(false == true);");
-    auto opt_stmt = parser.parse_statement();
+    Parser parser("69420 + 36");
+    auto opt_expr = parser.parse_expression();
 
     if (parser.has_errors()) {
         for (auto const& error : parser.errors()) {
@@ -16,11 +18,18 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    auto stmt = opt_stmt.value();
+    auto expr = opt_expr.value();
 
     Typechecker typechecker;
-    stmt->accept(typechecker);
+    expr->accept(typechecker);
 
-    std::cout << stmt->done << '\n';
-    return 0;
+    if (!expr->done) {
+        return 1;
+    }
+
+    NumbVm vm;
+    BytecodeGenerator generator(vm);
+    expr->accept(generator);
+
+    std::cout << "written: " << vm.bytecode.size() << " bytes\n";
 }

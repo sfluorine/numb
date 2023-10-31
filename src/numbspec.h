@@ -19,11 +19,11 @@ struct NumbTypeInfo {
     }
 
     NumbTypeInfo(NumbType type, std::string name, bool valid_variable_type,
-                 bool valid_function_return_type)
-        : type(type),
-          name(std::move(name)),
-          valid_variable_type(valid_variable_type),
-          valid_function_return_type(valid_function_return_type)
+        bool valid_function_return_type)
+        : type(type)
+        , name(std::move(name))
+        , valid_variable_type(valid_variable_type)
+        , valid_function_return_type(valid_function_return_type)
     {
     }
 
@@ -54,11 +54,11 @@ struct NumbBinopInfo {
     }
 
     NumbBinopInfo(NumbBinop type, std::string repr, std::vector<NumbType> takes,
-                  NumbType returns)
-        : type(type),
-          repr(std::move(repr)),
-          takes(std::move(takes)),
-          returns(returns)
+        NumbType returns)
+        : type(type)
+        , repr(std::move(repr))
+        , takes(std::move(takes))
+        , returns(returns)
     {
     }
 
@@ -82,11 +82,11 @@ struct NumbUnaryInfo {
     }
 
     NumbUnaryInfo(NumbUnary type, std::string repr, std::vector<NumbType> takes,
-                  NumbType returns)
-        : type(type),
-          repr(std::move(repr)),
-          takes(std::move(takes)),
-          returns(returns)
+        NumbType returns)
+        : type(type)
+        , repr(std::move(repr))
+        , takes(std::move(takes))
+        , returns(returns)
     {
     }
 

@@ -8,10 +8,11 @@
 #include "common.h"
 #include "lexer.h"
 
-class Parser
-{
+class Parser {
 public:
-    Parser(std::string_view input) : m_lexer(input), m_current(m_lexer.next())
+    Parser(std::string_view input)
+        : m_lexer(input)
+        , m_current(m_lexer.next())
     {
     }
 
@@ -35,7 +36,7 @@ public:
     }
 
 private:
-    template <typename... Args>
+    template<typename... Args>
     void error(std::string_view, Args&&...);
 
     bool expect(Token::Type) const;

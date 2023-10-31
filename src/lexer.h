@@ -5,15 +5,14 @@
 
 #include "token.h"
 
-class Lexer
-{
+class Lexer {
 public:
     Lexer(std::string_view);
 
     Token next();
 
 private:
-    const char* start_span() const;
+    char const* start_span() const;
 
     bool eof() const;
 

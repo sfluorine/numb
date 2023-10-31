@@ -4,24 +4,25 @@
 
 #include "typechecker.h"
 
-template <typename... Args>
+template<typename... Args>
 void Typechecker::error(size_t line, std::string_view format, Args&&... args)
 {
     std::cerr << std::format(
-                     "{}: ERROR: {}", line,
-                     std::vformat(format, std::make_format_args(
-                                              std::forward<Args>(args)...)))
+        "{}: ERROR: {}", line,
+        std::vformat(format, std::make_format_args(std::forward<Args>(args)...)))
               << '\n';
 }
 
-void Typechecker::visit(ExprInt*)
+void Typechecker::visit(ExprInt* expr)
 {
     type = NumbType::Int;
+    expr->set_done();
 }
 
-void Typechecker::visit(ExprBool*)
+void Typechecker::visit(ExprBool* expr)
 {
     type = NumbType::Bool;
+    expr->set_done();
 }
 
 void Typechecker::visit(ExprUnary* expr)
@@ -52,8 +53,8 @@ void Typechecker::visit(ExprUnary* expr)
     }
 
     error(expr->line,
-          "unsupported type for '{}'\n    expr -> '{}'",
-          Token::type_to_string(expr->op.type), expr_type.name);
+        "unsupported type for '{}'\n    expr -> '{}'",
+        Token::type_to_string(expr->op.type), expr_type.name);
 }
 
 void Typechecker::visit(ExprBinary* expr)
@@ -66,9 +67,9 @@ void Typechecker::visit(ExprBinary* expr)
 
     if (lhs_type.type != rhs_type.type) {
         error(expr->line,
-              "mismatched types for '{}'\n    lhs -> '{}'\n    rhs -> '{}'",
-              Token::type_to_string(expr->op.type), lhs_type.name,
-              rhs_type.name);
+            "mismatched types for '{}'\n    lhs -> '{}'\n    rhs -> '{}'",
+            Token::type_to_string(expr->op.type), lhs_type.name,
+            rhs_type.name);
         return;
     }
 
@@ -91,8 +92,8 @@ void Typechecker::visit(ExprBinary* expr)
     }
 
     error(expr->line,
-          "unsupported types for '{}'\n    lhs -> '{}'\n    rhs -> '{}'",
-          Token::type_to_string(expr->op.type), lhs_type.name, rhs_type.name);
+        "unsupported types for '{}'\n    lhs -> '{}'\n    rhs -> '{}'",
+        Token::type_to_string(expr->op.type), lhs_type.name, rhs_type.name);
 }
 
 void Typechecker::visit(StmtLet* stmt)
