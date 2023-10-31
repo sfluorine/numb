@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    Parser parser("69420 + 36");
+    Parser parser("(1 + 2) * 3");
     auto opt_expr = parser.parse_expression();
 
     if (parser.has_errors()) {
@@ -31,5 +31,6 @@ int main(int argc, char** argv)
     BytecodeGenerator generator(vm);
     expr->accept(generator);
 
-    std::cout << "written: " << vm.bytecode.size() << " bytes\n";
+    vm.execute();
+    vm.dump_stack();
 }

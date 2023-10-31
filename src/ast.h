@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "numbspec.h"
 #include "token.h"
 
 class AstVisitor;
@@ -36,6 +37,8 @@ struct Expr : public Ast {
     virtual ~Expr()
     {
     }
+
+    NumbType result_type;
 
 protected:
     Expr(size_t line)

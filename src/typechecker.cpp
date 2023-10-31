@@ -16,12 +16,14 @@ void Typechecker::error(size_t line, std::string_view format, Args&&... args)
 void Typechecker::visit(ExprInt* expr)
 {
     type = NumbType::Int;
+    expr->result_type = type;
     expr->set_done();
 }
 
 void Typechecker::visit(ExprBool* expr)
 {
     type = NumbType::Bool;
+    expr->result_type = type;
     expr->set_done();
 }
 
@@ -44,6 +46,9 @@ void Typechecker::visit(ExprUnary* expr)
 
     auto op = opt_op.value();
     auto& op_info = g_numb_unary_infos[op];
+
+    type = op_info.returns;
+    expr->result_type = type;
 
     for (auto const& take : op_info.takes) {
         if (expr_type.type == op_info.returns) {
@@ -83,6 +88,7 @@ void Typechecker::visit(ExprBinary* expr)
     auto& op_info = g_numb_binop_infos[op];
 
     type = op_info.returns;
+    expr->result_type = type;
 
     for (auto const& take : op_info.takes) {
         if (lhs_type.type == take) {

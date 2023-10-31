@@ -20,16 +20,34 @@ void BytecodeGenerator::visit(ExprBinary* binary)
     binary->lhs->accept(*this);
     binary->rhs->accept(*this);
 
-    // TODO: add additional type information after typechecking
-    //       so we can emit the correct instruction for its type.
     switch (binary->op.type) {
     case Token::Type::Plus:
+        switch (binary->result_type) {
+            case NumbType::Int:
+                bytecode.push_back(INSTRUCTION_TO_BYTE(Instruction::I64Add));
+                break;
+        };
         break;
     case Token::Type::Minus:
+        switch (binary->result_type) {
+            case NumbType::Int:
+                bytecode.push_back(INSTRUCTION_TO_BYTE(Instruction::I64Sub));
+                break;
+        };
         break;
     case Token::Type::Star:
+        switch (binary->result_type) {
+            case NumbType::Int:
+                bytecode.push_back(INSTRUCTION_TO_BYTE(Instruction::I64Mul));
+                break;
+        };
         break;
     case Token::Type::Slash:
+        switch (binary->result_type) {
+            case NumbType::Int:
+                bytecode.push_back(INSTRUCTION_TO_BYTE(Instruction::I64Div));
+                break;
+        };
         break;
     }
 }

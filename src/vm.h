@@ -11,6 +11,7 @@ enum class ValueType {
     Empty,
     I64,
     F64,
+    Bool,
     Object,
 };
 
@@ -36,6 +37,12 @@ public:
     {
     }
 
+    Value(bool boolean)
+        : m_type(ValueType::Bool)
+        , m_value(boolean)
+    {
+    }
+
     Value(GcObject* object)
         : m_type(ValueType::Object)
         , m_value(object)
@@ -48,11 +55,13 @@ public:
 
     double& as_f64() { return std::get<double>(m_value); }
 
+    bool& as_bool() { return std::get<bool>(m_value); }
+
     GcObject*& as_object() { return std::get<GcObject*>(m_value); }
 
 private:
     ValueType m_type;
-    std::variant<Empty, int64_t, double, GcObject*> m_value;
+    std::variant<Empty, int64_t, double, bool, GcObject*> m_value;
 };
 
 template<typename T>
@@ -96,11 +105,33 @@ enum class Instruction : uint8_t {
 #define INSTRUCTION_TO_BYTE(ins) (static_cast<uint8_t>(ins))
 #define BYTE_TO_INSTRUCTION(byte) (static_cast<Instruction>(byte))
 
+enum class NumbTrap {
+    StackOverflow,
+    StackUnderflow,
+
+    InvalidInstruction,
+    InvalidOperand,
+
+    OK,
+};
+
 class NumbVm {
 public:
-    NumbVm() { }
+    NumbVm();
+
+    void execute();
+
+    void dump_stack();
 
 private:
+    NumbTrap eval();
+
+    NumbTrap push(Value value);
+
+    NumbTrap pop();
+
+    void catch_trap(NumbTrap);
+
     uint8_t fetch();
 
     int64_t read_qword();
@@ -117,4 +148,6 @@ private:
     bool m_halt { true };
     int64_t m_pc { -1 }; // program counter
     int64_t m_sp { -1 }; // stack pointer
+
+    std::vector<Value> m_stack;
 };
