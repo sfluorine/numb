@@ -59,6 +59,18 @@ struct ExprInt : public Expr {
     int64_t parsed_int;
 };
 
+struct ExprIdentifier : public Expr {
+    ExprIdentifier(std::string_view span, size_t line)
+        : span(span)
+        , Expr(line)
+    {
+    }
+
+    OVERLOAD_ACCEPT();
+
+    std::string_view span;
+};
+
 struct ExprBool : public Expr {
     ExprBool(bool parsed_bool, size_t line)
         : parsed_bool(parsed_bool)
@@ -128,19 +140,35 @@ struct StmtLet : public Stmt {
     std::shared_ptr<Expr> expr;
 };
 
-#define DEFINE_VIRTUAL_VISIT()           \
-    virtual void visit(ExprInt*) = 0;    \
-    virtual void visit(ExprBool*) = 0;   \
-    virtual void visit(ExprUnary*) = 0;  \
-    virtual void visit(ExprBinary*) = 0; \
-    virtual void visit(StmtLet*) = 0;
+struct StmtBlock : public Stmt {
+    StmtBlock(std::vector<std::shared_ptr<Stmt>> statements, std::size_t line)
+        : statements(std::move(statements))
+        , Stmt(line)
+    {
+    }
 
-#define OVERLOAD_VISIT()                      \
-    virtual void visit(ExprInt*) override;    \
-    virtual void visit(ExprBool*) override;   \
-    virtual void visit(ExprUnary*) override;  \
-    virtual void visit(ExprBinary*) override; \
-    virtual void visit(StmtLet*) override;
+    OVERLOAD_ACCEPT();
+
+    std::vector<std::shared_ptr<Stmt>> statements;
+};
+
+#define DEFINE_VIRTUAL_VISIT()                  \
+    virtual void visit(ExprInt*) = 0;           \
+    virtual void visit(ExprIdentifier*) = 0;    \
+    virtual void visit(ExprBool*) = 0;          \
+    virtual void visit(ExprUnary*) = 0;         \
+    virtual void visit(ExprBinary*) = 0;        \
+    virtual void visit(StmtLet*) = 0;           \
+    virtual void visit(StmtBlock*) = 0;
+
+#define OVERLOAD_VISIT()                             \
+    virtual void visit(ExprInt*) override;           \
+    virtual void visit(ExprIdentifier*) override;    \
+    virtual void visit(ExprBool*) override;          \
+    virtual void visit(ExprUnary*) override;         \
+    virtual void visit(ExprBinary*) override;        \
+    virtual void visit(StmtLet*) override;           \
+    virtual void visit(StmtBlock*) override;
 
 struct AstVisitor {
     virtual ~AstVisitor()

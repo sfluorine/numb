@@ -6,12 +6,14 @@
 
 #include "ast.h"
 #include "common.h"
+#include "compiler.h"
 #include "lexer.h"
 
 class Parser {
 public:
-    Parser(std::string_view input)
-        : m_lexer(input)
+    Parser(Compiler& compiler, std::string_view input)
+        : m_compiler(compiler)
+        , m_lexer(input)
         , m_current(m_lexer.next())
     {
     }
@@ -24,6 +26,7 @@ public:
 
     std::optional<std::shared_ptr<Stmt>> parse_statement();
     std::optional<std::shared_ptr<Stmt>> parse_let_stmt();
+    std::optional<std::shared_ptr<Stmt>> parse_block_stmt();
 
     bool has_errors() const
     {
@@ -48,6 +51,7 @@ private:
     void match(Token::Type);
 
 private:
+    Compiler& m_compiler;
     Lexer m_lexer;
     Token m_current;
     std::vector<std::string> m_errors;

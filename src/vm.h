@@ -4,8 +4,10 @@
 
 #include <stdint.h>
 
+#include <unordered_map>
 #include <variant>
 #include <vector>
+#include <optional>
 
 enum class ValueType {
     Empty,
@@ -76,13 +78,13 @@ public:
         return m_index++;
     }
 
-    T* get(int64_t index)
+    std::optional<T> get(int64_t index)
     {
         if (index >= m_index) {
-            return nullptr;
+            return {};
         }
 
-        return &m_data[index];
+        return m_data[index];
     }
 
 private:
@@ -95,11 +97,20 @@ enum class Instruction : uint8_t {
 
     I64Const,
     F64Const,
+    BoolConst,
+
+    Pop,
 
     I64Add,
     I64Sub,
     I64Mul,
     I64Div,
+
+    I64Minus,
+    BoolNot,
+
+    GetLocal,
+    SetLocal,
 };
 
 #define INSTRUCTION_TO_BYTE(ins) (static_cast<uint8_t>(ins))
@@ -139,15 +150,17 @@ private:
     int32_t read_dword();
 
 public:
+    int64_t pc { -1 }; // program counter
+    int64_t sp { -1 }; // stack pointer
+
     std::vector<uint8_t> bytecode;
+    std::unordered_map<std::string_view, int64_t> locals;
+    std::vector<Value> stack;
 
     Pool<int64_t> i64_pool;
     Pool<double> f64_pool;
+    Pool<bool> bool_pool;
 
 private:
     bool m_halt { true };
-    int64_t m_pc { -1 }; // program counter
-    int64_t m_sp { -1 }; // stack pointer
-
-    std::vector<Value> m_stack;
 };

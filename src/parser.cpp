@@ -89,6 +89,13 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_primary()
         std::from_chars(span.data(), span.data() + span.length(), result);
 
         return std::make_shared<ExprInt>(result, current_line);
+    } else if (expect(Token::Type::Identifier)) {
+        auto tok = m_current;
+        auto span = tok.span;
+
+        consume();
+
+        return std::make_shared<ExprIdentifier>(span, current_line);
     } else if (expect(Token::Type::True)) {
         consume();
         return std::make_shared<ExprBool>(true, current_line);
@@ -124,7 +131,15 @@ std::optional<std::shared_ptr<Expr>> Parser::parse_unary()
 
 std::optional<std::shared_ptr<Stmt>> Parser::parse_statement()
 {
-    return TRY(parse_let_stmt());
+    if (expect(Token::Type::LCurly)) {
+        m_compiler.begin_scope();
+        auto block = TRY(parse_block_stmt());
+        m_compiler.end_scope();
+
+        return block;
+    } else {
+        return TRY(parse_let_stmt());
+    }
 }
 
 std::optional<std::shared_ptr<Stmt>> Parser::parse_let_stmt()
@@ -148,8 +163,33 @@ std::optional<std::shared_ptr<Stmt>> Parser::parse_let_stmt()
 
     RETURN_IF_ERROR();
 
+    if (m_compiler.scope_depth > 0) {
+        if (!m_compiler.push_local(name_span)) {
+            error("cannot declare variable '{}' since it's already exists", name_span);
+            return {};
+        }
+    }
+
     return std::make_shared<StmtLet>(std::string(name_span),
         std::move(expr.value()), current_line);
+}
+
+std::optional<std::shared_ptr<Stmt>> Parser::parse_block_stmt()
+{
+    auto const current_line = m_current.line;
+    match(Token::Type::LCurly);
+
+    std::vector<std::shared_ptr<Stmt>> statements;
+
+    while (!eof() && !expect(Token::Type::RCurly)) {
+        statements.push_back(TRY(parse_statement()));
+    }
+
+    match(Token::Type::RCurly);
+
+    RETURN_IF_ERROR();
+
+    return std::make_shared<StmtBlock>(std::move(statements), current_line);
 }
 
 template<typename... Args>

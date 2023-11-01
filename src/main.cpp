@@ -7,8 +7,12 @@
 
 int main(int argc, char** argv)
 {
-    Parser parser("(1 + 2) * 3 / 3");
-    auto opt_expr = parser.parse_expression();
+    Compiler compiler;
+    Parser parser(compiler, "{ let x = -34; let y = 35; let nice = x + y; { let haha = 69420; } }");
+
+    compiler.begin_scope();
+    auto opt_block = parser.parse_block_stmt();
+    compiler.end_scope();
 
     if (parser.has_errors()) {
         for (auto const& error : parser.errors()) {
@@ -18,18 +22,21 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    auto expr = opt_expr.value();
-
-    Typechecker typechecker;
-    expr->accept(typechecker);
-
-    if (!expr->done) {
+    auto block = opt_block.value();
+    
+    Typechecker typechecker(compiler);
+    block->accept(typechecker);
+    
+    if (!block->done) {
         return 1;
     }
-
+    
     NumbVm vm;
-    BytecodeGenerator generator(vm);
-    expr->accept(generator);
+    
+    BytecodeGenerator generator(compiler, vm);
+    block->accept(generator);
+
+    vm.bytecode.push_back(INSTRUCTION_TO_BYTE(Instruction::Halt));
 
     vm.execute();
     vm.dump_stack();

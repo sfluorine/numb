@@ -7,6 +7,7 @@
 template<typename... Args>
 void Typechecker::error(size_t line, std::string_view format, Args&&... args)
 {
+    has_error = true;
     std::cerr << std::format(
         "{}: ERROR: {}", line,
         std::vformat(format, std::make_format_args(std::forward<Args>(args)...)))
@@ -16,6 +17,18 @@ void Typechecker::error(size_t line, std::string_view format, Args&&... args)
 void Typechecker::visit(ExprInt* expr)
 {
     type = NumbType::Int;
+    expr->result_type = type;
+    expr->set_done();
+}
+
+void Typechecker::visit(ExprIdentifier* expr)
+{
+    if (compiler.find_local(expr->span) == -1) {
+        error(expr->line, "cannot find variable '{}'", expr->span);
+        return;
+    }
+
+    type = compiler.locals_type_infos[expr->span].type;
     expr->result_type = type;
     expr->set_done();
 }
@@ -31,10 +44,6 @@ void Typechecker::visit(ExprUnary* expr)
 {
     auto& inner_expr = expr->expr;
     inner_expr->accept(*this);
-
-    if (!inner_expr->done) {
-        return;
-    }
 
     auto& expr_type = g_numb_type_infos[type];
 
@@ -65,9 +74,17 @@ void Typechecker::visit(ExprUnary* expr)
 void Typechecker::visit(ExprBinary* expr)
 {
     expr->lhs->accept(*this);
+    if (has_error) {
+        return;
+    }
+
     auto& lhs_type = g_numb_type_infos[type];
 
     expr->rhs->accept(*this);
+    if (has_error) {
+        return;
+    }
+
     auto& rhs_type = g_numb_type_infos[type];
 
     if (lhs_type.type != rhs_type.type) {
@@ -105,9 +122,28 @@ void Typechecker::visit(ExprBinary* expr)
 void Typechecker::visit(StmtLet* stmt)
 {
     stmt->expr->accept(*this);
+    if (has_error) {
+        return;
+    }
 
-    if (stmt->expr->done) {
-        stmt->set_done();
+    if (compiler.find_local(stmt->name) == -1) {
+        error(stmt->line, "cannot find variable '{}'", stmt->name);
+        return;
+    }
+
+    auto index = compiler.find_local(stmt->name);
+    compiler.locals_type_infos[compiler.locals[index].name] = g_numb_type_infos[stmt->expr->result_type];
+
+    stmt->set_done();
+}
+
+void Typechecker::visit(StmtBlock* stmt)
+{
+    for (auto& stmt : stmt->statements) {
+        stmt->accept(*this);
+        if (has_error) {
+            return;
+        }
     }
 
     stmt->set_done();
